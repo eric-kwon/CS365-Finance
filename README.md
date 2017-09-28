@@ -4,4 +4,4 @@
 
 | Assignment # | Link | 
 |:------------:|:----:|
-|#1|[Link](./SingleServerQueue/)|
+|HW - 1|[Link](./SingleServerQueue/)|

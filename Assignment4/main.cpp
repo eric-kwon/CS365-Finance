@@ -1,3 +1,9 @@
+// Version Update (10-12-17)
+// - Edited random_walk function to calculate the mark to market value for day 5
+// - Edited random_walk to allow partial runs
+// - Added function that compares initial future value to the value after random walks
+// - Added question solutions from 4.3.4 Addendum
+
 #include <iostream>
 #include <math.h>
 #include <fstream>
@@ -31,7 +37,8 @@ void forward_profit (double fv, double ffv, double &profit, string &strategy) {
 
 // 4.3 Futures: Mark to Market
 void random_walk (double si[], double fi[], double (&money)[7], int size, ofstream& myfile) {
-    for (int i=1 ; i <= size-2 ; i++) {
+    int lastRun = 0;
+    for (int i=1 ; i < size ; i++) {
         if (fi[i] > fi[i-1]) {
             money[i] = fi[i] - fi[i-1];
         }
@@ -41,10 +48,10 @@ void random_walk (double si[], double fi[], double (&money)[7], int size, ofstre
         else {
             money[i] = 0;
         }
-        money[6] += money[i];
+        money[size] += money[i];
+        lastRun = i;
     }
-    money[5] = -1 * si[5];
-    money[6] += money[5];
+    money[size] += (-1 * fi[lastRun]);
 
     myfile << left << setw(3) << setfill(' ') << "i";
     myfile << left << setw(7) << setfill(' ') << "si";
@@ -52,7 +59,7 @@ void random_walk (double si[], double fi[], double (&money)[7], int size, ofstre
     myfile << left << setw(7) << setfill(' ') << "recvd";
     myfile << left << setw(7) << setfill(' ') << "paid";
     myfile << endl;
-    for (int i=1 ; i<6 ; i++) {
+    for (int i=1 ; i<size ; i++) {
         myfile << left << setw(3) << setfill(' ') << i;
         myfile << left << setw(7) << setfill(' ') << si[i];
         myfile << left << setw(7) << setfill(' ') << fi[i];
@@ -70,8 +77,19 @@ void random_walk (double si[], double fi[], double (&money)[7], int size, ofstre
         }
         myfile << endl;
     }
-    myfile << "Total Money Paid: " << (-1 * money[6]) << endl;
+    myfile << "Total Money Paid: " << (-1 * money[size]) << endl;
 }
+
+// 4.3.3 Discrepancy Check
+string random_walk_check (double f0, double ff) {
+    ff *= -1;
+    string result = "";
+    if (f0 == ff)
+        return result = "Random Walk DOES NOT Affect Amount Paid";
+    else
+        return result = "Random Walk DOES Affect Amount Paid";
+}
+
 int main() {
     
     // Output file
@@ -144,8 +162,56 @@ int main() {
     myfile << endl;
 
     // 4.3.3 Summary
-    myfile << "4.3.3 Solution: ";
-    myfile << "Yes the random walk affect the total amount paid by the investor" << endl;
+    myfile << "4.3.3 Solution: " << endl;
+    myfile << "For 4.3.1: " << random_walk_check(rw1_f[0], rw1_m[6]) << endl;
+    myfile << "For 4.3.2: " << random_walk_check(rw2_f[0], rw2_m[6]) << endl << endl;
+
+    //4.3.5 Random Walk #3 Variables
+    double rw3_s[6] = {100.0, 99.5, 101.3, 101.3, 100.1, 102.3};
+    double rw3_f[6] = {105.5, 106.3, 105.1, 105.8, 104.2, 102.3};
+    double rw3_m[7];
+    myfile << "4.3.5 Solution: Full Run" << endl;
+    random_walk(rw3_s, rw3_f, rw3_m, 6, myfile);
+    myfile << endl;
+
+    //4.3.5.1 Random Walk #3 Until Day 2
+    double rw3_m_2[7];
+    myfile << "4.3.5 Solution: Sell on Day 2" << endl;
+    random_walk(rw3_s, rw3_f, rw3_m_2, 3, myfile);
+    myfile << endl;
+
+    //4.3.5.2 Random Walk #3 Until Day 3
+    double rw3_m_3[7];
+    myfile << "4.3.5 Solution: Sell on Day 2" << endl;
+    random_walk(rw3_s, rw3_f, rw3_m_3, 4, myfile);
+    myfile << endl;
+
+    //4.3.6 Random Walk #4 Variables
+    double rw4_s[6] = {100.0, 99.7, 101.2, 101.5, 102.8, 102.3};
+    double rw4_f[6] = {105.5, 106.3, 105.1, 105.8, 104.2, 102.3};
+    double rw4_m[7];
+    myfile << "4.3.6 Solution: Full Run" << endl;
+    random_walk(rw4_s, rw4_f, rw4_m, 6, myfile);
+    myfile << endl;
+
+    //4.3.6.1 Random Walk #3 Until Day 2
+    double rw4_m_2[7];
+    myfile << "4.3.6 Solution: Sell on Day 2" << endl;
+    random_walk(rw4_s, rw4_f, rw4_m_2, 3, myfile);
+    myfile << endl;
+
+    //4.3.6.2 Random Walk #3 Until Day 3
+    double rw4_m_3[7];
+    myfile << "4.3.6 Solution: Sell on Day 2" << endl;
+    random_walk(rw4_s, rw4_f, rw4_m_3, 4, myfile);
+    myfile << endl;
+
+    //4.3.7 Summary
+    myfile << "4.3.7 Solution: " << endl;
+    myfile << "For 4.3.5.1: " << random_walk_check(rw3_f[0], rw3_m_2[3]) << endl;
+    myfile << "For 4.3.5.2: " << random_walk_check(rw3_f[0], rw3_m_3[4]) << endl;
+    myfile << "For 4.3.6.1: " << random_walk_check(rw4_f[0], rw4_m_2[3]) << endl;
+    myfile << "For 4.3.6.2: " << random_walk_check(rw4_f[0], rw4_m_3[4]) << endl;
 
     myfile.close();
     return 0;

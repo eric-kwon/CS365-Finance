@@ -36,8 +36,7 @@ void forward_profit (double fv, double ffv, double &profit, string &strategy) {
 }
 
 // 4.3 Futures: Mark to Market
-void random_walk (double si[], double fi[], double (&money)[7], int size, ofstream& myfile) {
-    int lastRun = 0;
+void random_walk (double si[], double fi[], double (&money)[7], int size, ofstream &myfile) {
     for (int i=1 ; i < size ; i++) {
         if (fi[i] > fi[i-1]) {
             money[i] = fi[i] - fi[i-1];
@@ -49,9 +48,8 @@ void random_walk (double si[], double fi[], double (&money)[7], int size, ofstre
             money[i] = 0;
         }
         money[size] += money[i];
-        lastRun = i;
     }
-    money[size] += (-1 * fi[lastRun]);
+    money[size] += (-1 * fi[size-1]);
 
     myfile << left << setw(3) << setfill(' ') << "i";
     myfile << left << setw(7) << setfill(' ') << "si";
@@ -80,7 +78,68 @@ void random_walk (double si[], double fi[], double (&money)[7], int size, ofstre
     myfile << "Total Money Paid: " << (-1 * money[size]) << endl;
 }
 
-// 4.3.3 Discrepancy Check
+// 4.3 Futures: Premature Sale
+void premature_sale (double si[], double fi[], double (&money)[7], int size, ofstream &myfile) {
+    for (int i=1 ; i < size ; i++) {
+        if (fi[i] > fi[i-1]) {
+            money[i] = fi[i] - fi[i-1];
+        }
+        else if (fi[i] < fi[i-1]) {
+            money[i] = -1 * (fi[i-1] - fi[i]);
+        }
+        else {
+            money[i] = 0;
+        }
+        money[size] += money[i];
+    }
+
+    myfile << left << setw(3) << setfill(' ') << "i";
+    myfile << left << setw(7) << setfill(' ') << "si";
+    myfile << left << setw(7) << setfill(' ') << "fi";
+    myfile << left << setw(7) << setfill(' ') << "recvd";
+    myfile << left << setw(7) << setfill(' ') << "paid";
+    myfile << endl;
+    for (int i=1 ; i<size ; i++) {
+        myfile << left << setw(3) << setfill(' ') << i;
+        myfile << left << setw(7) << setfill(' ') << si[i];
+        myfile << left << setw(7) << setfill(' ') << fi[i];
+        if (money[i] > 0) {
+            myfile << left << setw(7) << setfill(' ') << money[i];
+            myfile << left << setw(7) << setfill(' ') << 0;
+        }
+        else if (money[i] < 0) {
+            myfile << left << setw(7) << setfill(' ') << 0;
+            myfile << left << setw(7) << setfill(' ') << (-1 * money[i]);
+        }
+        else {
+            myfile << left << setw(7) << setfill(' ') << 0;
+            myfile << left << setw(7) << setfill(' ') << 0;
+        }
+        myfile << endl;
+    }
+    if (money[size] > 0)
+        myfile << "Account Gains: " << money[size] << endl;
+    else if (money[size] < 0)
+        myfile << "Account Losses: " << (-1 * money[size]) << endl;
+    else
+        myfile << "No Gain/Loss" << endl;
+
+    money[size+1] = fi[size-1] + money[size];
+    if (money[size+1] > fi[0]) {
+        money[size+1] = money[size+1] - fi[0];
+        myfile << "Net Gain by Premature Sale: " << money[size+1] << endl;
+    }
+    else if (money[size+1] < fi[0]) {
+        money[size+1] = fi[0] - money[size+1];
+        myfile << "Net Loss by Premature Sale: " << money[size+1] << endl;
+    }
+    else {
+        money[size+1] = 0;
+        myfile << "Zero Net Gain/Loss" << endl;
+    }
+}
+
+// 4.3.3 Discrepancy Check - Random Walk
 string random_walk_check (double f0, double ff) {
     ff *= -1;
     string result = "";
@@ -88,6 +147,15 @@ string random_walk_check (double f0, double ff) {
         return result = "Random Walk DOES NOT Affect Amount Paid";
     else
         return result = "Random Walk DOES Affect Amount Paid";
+}
+
+// 4.3.7 Discrepancy Check - Premature Sale
+string premature_sale_check (double pf1, double pf2) {
+    string result = "";
+    if (pf1 == pf2)
+        return result = "Profit/Loss IS NOT Affected";
+    else   
+        return result = "Profit/Loss IS Affected";
 }
 
 int main() {
@@ -177,13 +245,13 @@ int main() {
     //4.3.5.1 Random Walk #3 Until Day 2
     double rw3_m_2[7];
     myfile << "4.3.5 Solution: Sell on Day 2" << endl;
-    random_walk(rw3_s, rw3_f, rw3_m_2, 3, myfile);
+    premature_sale(rw3_s, rw3_f, rw3_m_2, 3, myfile);
     myfile << endl;
 
     //4.3.5.2 Random Walk #3 Until Day 3
     double rw3_m_3[7];
     myfile << "4.3.5 Solution: Sell on Day 2" << endl;
-    random_walk(rw3_s, rw3_f, rw3_m_3, 4, myfile);
+    premature_sale(rw3_s, rw3_f, rw3_m_3, 4, myfile);
     myfile << endl;
 
     //4.3.6 Random Walk #4 Variables
@@ -197,22 +265,19 @@ int main() {
     //4.3.6.1 Random Walk #3 Until Day 2
     double rw4_m_2[7];
     myfile << "4.3.6 Solution: Sell on Day 2" << endl;
-    random_walk(rw4_s, rw4_f, rw4_m_2, 3, myfile);
+    premature_sale(rw4_s, rw4_f, rw4_m_2, 3, myfile);
     myfile << endl;
 
     //4.3.6.2 Random Walk #3 Until Day 3
     double rw4_m_3[7];
     myfile << "4.3.6 Solution: Sell on Day 2" << endl;
-    random_walk(rw4_s, rw4_f, rw4_m_3, 4, myfile);
+    premature_sale(rw4_s, rw4_f, rw4_m_3, 4, myfile);
     myfile << endl;
 
     //4.3.7 Summary
     myfile << "4.3.7 Solution: " << endl;
-    myfile << "For 4.3.5.1: " << random_walk_check(rw3_f[0], rw3_m_2[3]) << endl;
-    myfile << "For 4.3.5.2: " << random_walk_check(rw3_f[0], rw3_m_3[4]) << endl;
-    myfile << "For 4.3.6.1: " << random_walk_check(rw4_f[0], rw4_m_2[3]) << endl;
-    myfile << "For 4.3.6.2: " << random_walk_check(rw4_f[0], rw4_m_3[4]) << endl;
-
+    myfile << "For 4.3.5.1 & 4.3.6.1: " << premature_sale_check(rw3_m_2[4], rw4_m_2[4]) << endl;
+    myfile << "For 4.3.5.2 & 4.3.6.2: " << premature_sale_check(rw3_m_3[5], rw4_m_3[5]) << endl;
     myfile.close();
     return 0;
 }

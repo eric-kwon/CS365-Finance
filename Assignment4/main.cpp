@@ -24,14 +24,22 @@ void forward_price (double s0, double t0, double r, double q, double tf, double 
 }
 
 // 4.2 Forwards: Arbitrage
-void forward_profit (double fv, double ffv, double &profit, string &strategy) {
+void forward_profit (double fv, double ffv, ofstream &file) {
     if (fv > ffv) {
-        strategy = "(Short Sell) ";
-        profit = fv - ffv;
+        file << "Strategy: Short Selling for profit of: " << fv - ffv << endl;
+        file << "1. Enter into forward contract to BUY" << endl;
+        file << "2. Short sell the promised stock to gain 100.0 cashflow" << endl;
+        file << "3. Using this cashflow, accrue interest until maturity (value): " << fv << endl;
+        file << "4. Upon maturity use the " << fv << " to cover the forward price of " << ffv << endl;
+        file << "5. Then, the remaining value is net profit: " << fv - ffv << endl << endl;
     }
     else {
-        strategy = "(Buy Low Sell High) ";
-        profit = ffv - fv;
+        file << "Strategy: Buy Low and Sell High for profit of: " << ffv - fv << endl;
+        file << "1. Enter into forward contract to SELL" << endl;
+        file << "2. Buy a stock by borrowing 100.0" << endl;
+        file << "3. Interest will accrue on the money borrowed to become " << fv << " at maturity" << endl;
+        file << "4. Upon maturity sell the stock that was bought and receive " << ffv << " and pay " << fv << " to the lender" << endl;
+        file << "5. Then, the remaining value is net profit: " << ffv - fv << endl << endl;
     }
 }
 
@@ -123,20 +131,6 @@ void premature_sale (double si[], double fi[], double (&money)[7], int size, ofs
         myfile << "Account Losses: " << (-1 * money[size]) << endl;
     else
         myfile << "No Gain/Loss" << endl;
-
-    money[size+1] = fi[size-1] + money[size];
-    if (money[size+1] > fi[0]) {
-        money[size+1] = money[size+1] - fi[0];
-        myfile << "Net Gain by Premature Sale: " << money[size+1] << endl;
-    }
-    else if (money[size+1] < fi[0]) {
-        money[size+1] = fi[0] - money[size+1];
-        myfile << "Net Loss by Premature Sale: " << money[size+1] << endl;
-    }
-    else {
-        money[size+1] = 0;
-        myfile << "Zero Net Gain/Loss" << endl;
-    }
 }
 
 // 4.3.3 Discrepancy Check - Random Walk
@@ -178,7 +172,7 @@ int main() {
     r = 5.5;
     q = 0;
     tf = 0.75;
-    forward_price (s0, t0, r, q, tf, fv);
+    forward_price(s0, t0, r, q, tf, fv);
     myfile << "4.1.1 Solution: " << fv << endl << endl;
 
     // 4.1.2 Fair Value for Below Parameters
@@ -187,12 +181,11 @@ int main() {
     r = 5.1;
     q = 1.1;
     tf = 0.65;
-    forward_price (s0, t0, r, q, tf, fv);
+    forward_price(s0, t0, r, q, tf, fv);
     myfile << "4.1.2 Solution: " << fv << endl << endl;
 
     // 4.2 Forwards: Arbitrage Variables
     double ffv = 0;
-    double profit = 0;
     string strategy = "";
 
     // 4.2 Paramaters
@@ -201,17 +194,17 @@ int main() {
     r = 5.0;
     q = 0.0;
     tf = 1.0;
-    forward_price (s0, t0, r, q, tf, fv);
+    forward_price(s0, t0, r, q, tf, fv);
 
     //4.2.1 Strategy & Profit for F=105.0
     ffv = 105.0;
-    forward_profit(fv, ffv, profit, strategy);
-    myfile << "4.2.1 Solution: " << strategy << profit << endl << endl;
+    myfile << "4.2.1 Solution: " << endl;
+    forward_profit(fv, ffv, myfile);
 
     //4.2.2 Strategy & Profit for F=106.0
     ffv = 106.0;
-    forward_profit(fv, ffv, profit, strategy);
-    myfile << "4.2.2 Solution: " << strategy << profit << endl << endl;
+    myfile << "4.2.2 Solution: " << endl;
+    forward_profit(fv, ffv, myfile);
     
     //4.3.1 Random Walk #1 Variables
     double rw1_s[6] = {100.0, 99.5, 101.3, 101.3, 100.2, 99.3};
@@ -275,9 +268,10 @@ int main() {
     myfile << endl;
 
     //4.3.7 Summary
-    myfile << "4.3.7 Solution: " << endl;
-    myfile << "For 4.3.5.1 & 4.3.6.1: " << premature_sale_check(rw3_m_2[4], rw4_m_2[4]) << endl;
-    myfile << "For 4.3.5.2 & 4.3.6.2: " << premature_sale_check(rw3_m_3[5], rw4_m_3[5]) << endl;
+    myfile << "4.3.7 Solution:" << endl;
+    myfile << "For Sale on Day 2: " << premature_sale_check(rw3_m_2[3], rw4_m_2[3]) << endl;
+    myfile << "For Sale on Day 3: " << premature_sale_check(rw3_m_3[4], rw4_m_3[4]);
+
     myfile.close();
     return 0;
 }

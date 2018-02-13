@@ -12,7 +12,7 @@
 using namespace std;
 
 // Name : Eric Kwon
-// Assignment 2
+// Assignment 4
 // Due : October 13, 2017
 
 // 4.1 Forward Price

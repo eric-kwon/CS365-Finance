@@ -133,6 +133,7 @@ int yield_from_price (double f, double c, int n, double b, double tol, int max_i
             return 0;
         }
     }
+    return -1;
 }
 
 void load_yield_from_price () {

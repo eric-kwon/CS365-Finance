@@ -4,5 +4,9 @@
 
 | Assignment # | Link | 
 |:------------:|:----:|
-|HW - 1|[Link](./Assignment1/)|
-|HW - 4|[Link](./Assignment4/)|
+|Binomial #1|[Link](./Binomial1/)|
+|Binomial #2|[Link](./Binomial2/)|
+|Binomial #3|[Link](./Binomial3/)|
+|Futures #1|[Link](./Futures1/)|
+|Futures #2|[Link](./Futures2/)|
+|Final Project|[Link](./Project-Final/)|
